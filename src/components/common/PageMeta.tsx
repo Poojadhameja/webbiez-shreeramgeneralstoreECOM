@@ -1,6 +1,5 @@
 const PageMeta = ({
   title,
-  description,
 }: {
   title: string;
   description: string;
