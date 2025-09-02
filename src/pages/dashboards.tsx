@@ -1,5 +1,7 @@
 // File: Dashboard.tsx
 import React from "react";
+import { useProducts } from "../hooks/useProducts";
+import { useOrders } from "../hooks/useOrders";
 
 type DashboardCardProps = {
   title: string;
@@ -8,6 +10,7 @@ type DashboardCardProps = {
   bgColor?: string;
   textColor?: string;
   icon?: React.ReactNode;
+  loading?: boolean;
 };
 
 // Card Component with color support
@@ -18,18 +21,23 @@ const DashboardCard = ({
   bgColor = "bg-white",
   textColor = "text-black",
   icon,
+  loading = false,
 }: DashboardCardProps) => (
   <div
-    className={`${bgColor} ${textColor} p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100`}
+    className={`${bgColor} ${textColor} p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100`}
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm opacity-80 mb-2">{title}</p>
-        <p className="text-3xl font-bold">{count.toLocaleString()}</p>
+        <p className="text-xs sm:text-sm opacity-80 mb-2">{title}</p>
+        {loading ? (
+          <div className="h-8 bg-white/20 rounded animate-pulse mb-2"></div>
+        ) : (
+          <p className="text-2xl sm:text-3xl font-bold">{count.toLocaleString()}</p>
+        )}
         <p className="text-xs opacity-70 mt-2">{description}</p>
       </div>
       {icon && (
-        <div className="text-4xl opacity-20">
+        <div className="text-2xl sm:text-4xl opacity-20">
           {icon}
         </div>
       )}
@@ -56,88 +64,106 @@ const topProducts = [
 ];
 
 const Dashboard = () => {
+  const { products, loading: productsLoading } = useProducts();
+  const { orders, loading: ordersLoading } = useOrders();
+
+  // Calculate real-time data
+  const totalProducts = products.length;
+  const totalOrders = orders.length;
+  const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
+  const totalCustomers = orders.reduce((sum, order) => {
+    if (!orders.slice(0, orders.indexOf(order)).some(o => o.customer_id === order.customer_id)) {
+      return sum + 1;
+    }
+    return sum;
+  }, 0);
+
   return (
-    <div className="w-full px-4">
+    <div className="w-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
           Welcome to Shreeram Stationery Admin
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600">
           Manage your stationery business efficiently
         </p>
       </div>
 
       {/* Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <DashboardCard
           title="Total Orders"
-          count={154}
+          count={totalOrders}
           description="Last 30 days"
           bgColor="bg-gradient-to-br from-blue-500 to-blue-600"
           textColor="text-white"
+          loading={ordersLoading}
         />
         <DashboardCard
           title="Total Customers"
-          count={92}
+          count={totalCustomers}
           description="Active customers"
           bgColor="bg-gradient-to-br from-green-500 to-green-600"
           textColor="text-white"
+          loading={ordersLoading}
         />
         <DashboardCard
           title="Revenue"
-          count={1200000}
+          count={totalRevenue}
           description="This month (₹)"
           bgColor="bg-gradient-to-br from-orange-500 to-orange-600"
           textColor="text-white"
+          loading={ordersLoading}
         />
         <DashboardCard
           title="Products Listed"
-          count={1258}
+          count={totalProducts}
           description="Active inventory"
           bgColor="bg-gradient-to-br from-purple-500 to-purple-600"
           textColor="text-white"
+          loading={productsLoading}
         />
       </div>
 
       {/* Charts and Analytics Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         {/* Recent Customers Table */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 flex items-center">
             <span className="w-2 h-8 bg-blue-500 rounded-full mr-3"></span>
             Recent Customers
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2">Name</th>
-                  <th className="px-3 py-2">Firm</th>
-                  <th className="px-3 py-2">Amount</th>
-                  <th className="px-3 py-2">Status</th>
+                  <th className="px-2 sm:px-3 py-2">Name</th>
+                  <th className="px-2 sm:px-3 py-2">Firm</th>
+                  <th className="px-2 sm:px-3 py-2">Amount</th>
+                  <th className="px-2 sm:px-3 py-2">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {recentCustomers.slice(0, 4).map((customer, index) => (
                   <tr
                     key={index}
-                    className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="border-b hover:bg-gray-50"
                   >
-                    <td className="px-3 py-2 font-medium text-gray-800 dark:text-white">
+                    <td className="px-2 sm:px-3 py-2 font-medium text-gray-800">
                       {customer.name}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                    <td className="px-2 sm:px-3 py-2 text-gray-600">
                       {customer.firm_name}
                     </td>
-                    <td className="px-3 py-2 font-semibold text-green-600">
+                    <td className="px-2 sm:px-3 py-2 font-semibold text-green-600">
                       {customer.amount}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         customer.status === 'Active' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {customer.status}
                       </span>
@@ -150,19 +176,19 @@ const Dashboard = () => {
         </div>
 
         {/* Top Selling Products */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 flex items-center">
             <span className="w-2 h-8 bg-orange-500 rounded-full mr-3"></span>
             Top Selling Products
           </h2>
           <div className="space-y-3">
             {topProducts.map((product, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-white text-sm">
+                  <p className="font-medium text-gray-800 text-sm">
                     {product.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {product.category}
                   </p>
                 </div>
@@ -170,7 +196,7 @@ const Dashboard = () => {
                   <p className="font-semibold text-green-600 text-sm">
                     {product.revenue}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500">
                     {product.sales} units
                   </p>
                 </div>
@@ -181,33 +207,33 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+              <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-8 bg-purple-500 rounded-full mr-3"></span>
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="p-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors">
-            <div className="text-blue-600 dark:text-blue-400 text-center">
-              <div className="text-2xl mb-2">📦</div>
-              <p className="text-sm font-medium">Add Product</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <button className="p-3 sm:p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
+            <div className="text-blue-600 text-center">
+              <div className="text-xl sm:text-2xl mb-2">📦</div>
+              <p className="text-xs sm:text-sm font-medium">Add Product</p>
             </div>
           </button>
-          <button className="p-4 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800 transition-colors">
-            <div className="text-green-600 dark:text-green-400 text-center">
-              <div className="text-2xl mb-2">📋</div>
-              <p className="text-sm font-medium">New Order</p>
+          <button className="p-3 sm:p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
+            <div className="text-green-600 text-center">
+              <div className="text-xl sm:text-2xl mb-2">📋</div>
+              <p className="text-xs sm:text-sm font-medium">New Order</p>
             </div>
           </button>
-          <button className="p-4 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-800 transition-colors">
-            <div className="text-orange-600 dark:text-orange-400 text-center">
-              <div className="text-2xl mb-2">👥</div>
-              <p className="text-sm font-medium">Add Customer</p>
+          <button className="p-3 sm:p-4 bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 transition-colors">
+            <div className="text-orange-600 text-center">
+              <div className="text-xl sm:text-2xl mb-2">👥</div>
+              <p className="text-xs sm:text-sm font-medium">Add Customer</p>
             </div>
           </button>
-          <button className="p-4 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-800 transition-colors">
-            <div className="text-purple-600 dark:text-purple-400 text-center">
-              <div className="text-2xl mb-2">📊</div>
+          <button className="p-3 sm:p-4 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors">
+            <div className="text-purple-600 text-center">
+              <div className="text-xl sm:text-2xl mb-2">📊</div>
               <p className="text-sm font-medium">View Reports</p>
             </div>
           </button>

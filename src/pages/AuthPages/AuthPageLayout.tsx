@@ -21,7 +21,7 @@ export default function AuthLayout({
                 <img
                   width={231}
                   height={48}
-                  src="/images/logo/shreeramlogo.png"
+                  src="/images/logo/logo.jpg"
                   alt="Shreeram Stationery"
                 />
               </Link>
