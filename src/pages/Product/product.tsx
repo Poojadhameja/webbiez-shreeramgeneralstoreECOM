@@ -1,5 +1,5 @@
 // File: Products.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 
 const dummyProducts = [
   {
@@ -33,7 +33,7 @@ const dummyProducts = [
 ];
 
 const Products = () => {
-  const [products, setProducts] = useState(dummyProducts);
+  const [products] = useState(dummyProducts);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
